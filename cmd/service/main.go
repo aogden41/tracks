@@ -7,5 +7,5 @@ func main() {
 		// Run the server
 		api.Run()
 	}()
-	select {}
+	select {} // Graceful shutdown
 }

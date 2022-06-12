@@ -14,33 +14,6 @@ const fixesJson = "https://ganderoceanicoca.ams3.digitaloceanspaces.com/resource
 // Months of the year
 var months = [12]string{"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"}
 
-// Direction enum
-type Direction int32
-
-const (
-	UNKNOWN Direction = iota
-	WEST
-	EAST
-)
-
-// Fix model
-type Fix struct {
-	Name      string  `json:name`
-	Latitude  float64 `json:latitude`
-	Longitude float64 `json:longitude`
-}
-
-// Track model
-type Track struct {
-	ID           string    `json:id`
-	TMI          string    `json:tmi`
-	Route        []Fix     `json:route`
-	FlightLevels []int32   `json:flightLevels`
-	Direction    Direction `json:direction`
-	ValidFrom    string    `json:validFrom`
-	ValidTo      string    `json:validTo`
-}
-
 // TODO: half waypoints
 // Parse the track data
 func ParseTracks(isMetres bool) {
@@ -118,7 +91,7 @@ func ParseTracks(isMetres bool) {
 				tmi = tmi + string(natDataLines[i][tmiStart+4])
 			}
 		} else {
-			// Convert validities
+			// Convert validities TODO
 			for j := 0; j < len(months); j++ {
 				reached := false
 
