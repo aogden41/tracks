@@ -1,0 +1,1 @@
+alias gomodvendor="go mod verify && go mod tidy && go mod vendor"
