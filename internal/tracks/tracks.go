@@ -41,15 +41,16 @@ type Track struct {
 	ValidTo      string    `json:validTo`
 }
 
+// TODO: half waypoints
 // Parse the track data
 func ParseTracks(isMetres bool) {
 	// Download the tracks and the fixes
 	tracksRes, err := http.Get(trackUrl)
-	fixesData, err := http.Get(trackUrl)
+	fixesData, err := http.Get(fixesJson)
 
 	// Returned string data from files
 	var natData string
-	//var fixData string
+	var fixData string
 
 	// Handle any error from web requests
 	if err != nil {
@@ -64,7 +65,7 @@ func ParseTracks(isMetres bool) {
 	bytes, _ := io.ReadAll(tracksRes.Body)
 	natData = string(bytes) // Track message
 	bytes, _ = io.ReadAll(fixesData.Body)
-	//fixData = string(bytes) // Downloaded fixes
+	fixData = string(bytes) // Downloaded fixes
 
 	// Split the data
 	natDataLines := strings.Split(string(natData), "\n")
@@ -77,7 +78,10 @@ func ParseTracks(isMetres bool) {
 
 	// Store data currently being processed
 	var track []string
-	//var validities []string
+	var validities []string
+	var tmi string
+	var validTo string
+	var validFrom string
 
 	// Flag to get the next 2 lines for a track
 	getNextTwo := 0
@@ -107,7 +111,7 @@ func ParseTracks(isMetres bool) {
 		} else if strings.Contains(natDataLines[i], "TMI IS") {
 			// Extract the TMI
 			tmiStart := strings.Index(natDataLines[i], "TMI IS") + 7
-			tmi := string(natDataLines[i][tmiStart : tmiStart+3])
+			tmi = string(natDataLines[i][tmiStart : tmiStart+3])
 
 			// Add amendment character if it exists
 			if unicode.IsLetter(lineRunes[tmiStart+3]) {

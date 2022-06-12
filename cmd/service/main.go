@@ -1,8 +1,11 @@
 package main
 
-import "github.com/aogden41/tracks/internal/server"
+import "github.com/aogden41/tracks/internal/api"
 
 func main() {
-	// Run the server
-	server.Run()
+	go func() {
+		// Run the server
+		api.Run()
+	}()
+	select {}
 }
