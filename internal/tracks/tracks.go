@@ -88,7 +88,7 @@ func ParseTracks(isMetres bool) {
 				tmi = tmi + string(natDataLines[i][tmiStart+4])
 			}
 		} else {
-			// Convert validities TODO
+			// Convert validities
 			for j := 0; j < len(months); j++ {
 				reached := false
 
