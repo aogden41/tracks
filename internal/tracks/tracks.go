@@ -27,7 +27,7 @@ func ParseTracks(isMetres bool) {
 
 	// Handle any error from web requests
 	if err != nil {
-		// do something...
+		panic(err)
 	}
 
 	// Fetching is done, defer closure until end of function
