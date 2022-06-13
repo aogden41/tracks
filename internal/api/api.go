@@ -1,10 +1,12 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/aogden41/tracks/internal/db"
 	"github.com/aogden41/tracks/internal/tracks"
 )
 
@@ -50,4 +52,16 @@ func GetConcorde(w http.ResponseWriter, r *http.Request) {
 	// Read bytes and output
 	bytes, _ := io.ReadAll(res.Body)
 	fmt.Fprintf(w, string(bytes))
+}
+
+// Route "/fixes"
+func GetFixes(w http.ResponseWriter, r *http.Request) {
+	// Fetch fixes and check error
+	fixes, err := db.SelectFixes()
+	if err != nil {
+		panic(err)
+	}
+
+	// Encode and return
+	json.NewEncoder(w).Encode(fixes)
 }

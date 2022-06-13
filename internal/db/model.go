@@ -9,6 +9,15 @@ const (
 	EAST
 )
 
+// Track type enum
+type TrackType int32
+
+const (
+	REGULAR TrackType = iota
+	EVENT
+	CONCORDE
+)
+
 // Fix model
 type Fix struct {
 	ID        int     `json:id`
@@ -19,8 +28,8 @@ type Fix struct {
 
 // Track model
 type Track struct {
-	UID          int       `json:uid`
-	ID           string    `json:id`
+	ID           int       `json:uid`
+	TrackID      string    `json:id`
 	TMI          string    `json:tmi`
 	Route        []Fix     `json:route`
 	FlightLevels []int32   `json:flightLevels`
@@ -28,4 +37,5 @@ type Track struct {
 	ValidFrom    string    `json:validFrom`
 	ValidTo      string    `json:validTo`
 	DaysOld      int       `json:daysOld`
+	Type         TrackType `json:type`
 }

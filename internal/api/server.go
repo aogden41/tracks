@@ -12,6 +12,7 @@ func RouteEndpoints(router *mux.Router) {
 	// Routes
 	router.HandleFunc("/", Index).Methods("GET")
 	router.HandleFunc("/data", Get).Methods("GET")
+	router.HandleFunc("/fixes", GetFixes).Methods("GET")
 	router.HandleFunc("/concorde", GetConcorde).Methods("GET")
 	router.HandleFunc("/event", GetEvent).Methods("GET")
 

@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+
+	_ "github.com/lib/pq"
 )
 
 // Connection config
@@ -45,98 +47,129 @@ func Connect() (ctx *sql.DB) {
 
 func SelectCurrentTracks() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func SelectConcordeTracks() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func SelectEventTracks() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
-func SelectAllFixes() {
+func SelectFixes() (fixesSlice *[]Fix, err error) {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
+	// Statement
+	query := `SELECT * from tracks.fixes;`
+
+	// Perform query
+	rows, err := ctx.Query(query)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	// Return slice
+	var fixes []Fix
+
+	// Iterate through rows
+	for rows.Next() {
+		// Create fix and error check
+		var fix Fix
+		if err := rows.Scan(&fix.ID, &fix.Name, &fix.Latitude, &fix.Longitude); err != nil {
+			return &fixes, err
+		}
+		// Append
+		fixes = append(fixes, fix)
+	}
+
+	// Catch any other error
+	if err = rows.Err(); err != nil {
+		return &fixes, err
+	}
+
+	// Success, return everything
+	return &fixes, nil
 }
 
 func SelectAllCachedTracks() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func DeleteAllCachedTracks() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func InsertFix() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func InsertTrack() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func InsertMultipleTracks() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func UpdateFix() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func UpdateTrack() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func DeleteFix() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func DeleteCachedTracksOneDay() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
 
 func DeleteTrack() {
 	// Connect and defer
-	cxt := Connect()
-	defer cxt.Close()
+	ctx := Connect()
+	defer ctx.Close()
 
 }
