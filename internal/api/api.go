@@ -8,17 +8,21 @@ import (
 	"strconv"
 )
 
-// Route  "/"
+///
+/// INDEX/OTHERS
+///
+
+// GET /
 func Index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "https://ganderoceanic.com/nat-track-api-usage", http.StatusPermanentRedirect)
 }
 
 ///
-/// NORMAL TRACKS
-///
+/// CURRENT TRACKS
+/// TODO should I cache current tracks?
 
-// Route "/data"
-func GetAllTracks(w http.ResponseWriter, r *http.Request) {
+// GET /current
+func GetAllCurrentTracks(w http.ResponseWriter, r *http.Request) {
 	// SI units?
 	isMetres := true // Default
 	siVal, err := strconv.ParseBool(r.URL.Query().Get("si"))
@@ -38,17 +42,78 @@ func GetAllTracks(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&tracks)
 }
 
-// Route "/data/{track_id}"
-func GetOneTrack(w http.ResponseWriter, r *http.Request) {
+// GET /current/{track_id}
+func GetCurrentTrack(w http.ResponseWriter, r *http.Request) {
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
 }
 
-func UpdateOneTrack(w http.ResponseWriter, r *http.Request) {
-
+// GET /current/eastbound
+func GetCurrentEastboundTracks(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
 }
 
-func DeleteOneTrack(w http.ResponseWriter, r *http.Request) {
+// GET /current/westbound
+func GetCurrentWestboundTracks(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+// GET /current/now
+func GetCurrentTracksValidNow(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+// GET /current/later
+func GetCurrentTracksValidLater(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+// GET /current/earlier
+func GetCurrentTracksValidEarlier(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+///
+/// CACHED TRACKS
+///
+
+// GET /cached
+func GetAllCachedTracks(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+// GET /cached/{track_id}
+func GetCachedTrack(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+// GET /cached/days/{days_old}
+func GetCachedTracksByDaysOld(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+// GET /cached/eastbound
+func GetCachedEastboundTracks(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+// GET /cached/westbound
+func GetCachedWestboundTracks(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+// GET /cached/check/{track_id}
+func CheckIsTrackCached(w http.ResponseWriter, r *http.Request) {
 
 }
 
@@ -56,28 +121,26 @@ func DeleteOneTrack(w http.ResponseWriter, r *http.Request) {
 /// EVENT TRACKS
 ///
 
-// Route "/event"
+// GET /event
 func GetAllEventTracks(w http.ResponseWriter, r *http.Request) {
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
 
 }
 
-// Route "/event/{track_id}"
-func GetOneEventTrack(w http.ResponseWriter, r *http.Request) {
+// GET /event/{track_id}
+func GetEventTrack(w http.ResponseWriter, r *http.Request) {
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
 }
 
-func PostOneEventTrack(w http.ResponseWriter, r *http.Request) {
+// POST /event/{track_obj}
+func PostEventTrack(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func PostManyEventTracks(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func DeleteOneEventTrack(w http.ResponseWriter, r *http.Request) {
+// DELETE /event/{track_id}
+func DeleteEventTrack(w http.ResponseWriter, r *http.Request) {
 
 }
 
@@ -85,15 +148,15 @@ func DeleteOneEventTrack(w http.ResponseWriter, r *http.Request) {
 /// CONCORDE TRACKS
 ///
 
-// Route "/concorde"
+// GET /concorde
 func GetAllConcordeTracks(w http.ResponseWriter, r *http.Request) {
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
 
 }
 
-// Route "/concorde/{track_id}"
-func GetOneConcordeTrack(w http.ResponseWriter, r *http.Request) {
+// GET /concorde/{track_id}
+func GetConcordeTrack(w http.ResponseWriter, r *http.Request) {
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
 }
@@ -102,7 +165,7 @@ func GetOneConcordeTrack(w http.ResponseWriter, r *http.Request) {
 /// FIXES
 ///
 
-// Route "/fixes"
+// GET /fixes
 func GetAllFixes(w http.ResponseWriter, r *http.Request) {
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
@@ -116,16 +179,23 @@ func GetAllFixes(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(fixes)
 }
 
-// Route "/fixes/{fix_name}"
-func GetOneFix(w http.ResponseWriter, r *http.Request) {
+// GET /fixes/{fix_name}
+func GetFix(w http.ResponseWriter, r *http.Request) {
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
 }
 
-func PostOneFix(w http.ResponseWriter, r *http.Request) {
+// POST /fixes/{fix_obj}
+func PostFix(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func UpdateOneFix(w http.ResponseWriter, r *http.Request) {
+// UPDATE /fixes/{fix_obj}
+func UpdateFix(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// DELETE /fixes/{fix_name}
+func DeleteFix(w http.ResponseWriter, r *http.Request) {
 
 }
