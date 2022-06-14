@@ -45,34 +45,14 @@ func Connect() (ctx *sql.DB) {
 	return db
 }
 
-func SelectCurrentTracks() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func SelectConcordeTracks() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func SelectEventTracks() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func SelectFixes() (fixesSlice *[]Fix, err error) {
+// Return a map of fixes
+func SelectFixes() (fixMap map[string]Fix, err error) {
 	// Connect and defer
 	ctx := Connect()
 	defer ctx.Close()
 
 	// Statement
-	query := `SELECT * from tracks.fixes;`
+	query := `SELECT name, latitude, longitude FROM tracks.fixes;`
 
 	// Perform query
 	rows, err := ctx.Query(query)
@@ -81,95 +61,25 @@ func SelectFixes() (fixesSlice *[]Fix, err error) {
 	}
 	defer rows.Close()
 
-	// Return slice
-	var fixes []Fix
+	// Map to return
+	fixes := make(map[string]Fix)
 
 	// Iterate through rows
 	for rows.Next() {
 		// Create fix and error check
 		var fix Fix
-		if err := rows.Scan(&fix.ID, &fix.Name, &fix.Latitude, &fix.Longitude); err != nil {
-			return &fixes, err
+		if err := rows.Scan(&fix.Name, &fix.Latitude, &fix.Longitude); err != nil {
+			return fixes, err
 		}
-		// Append
-		fixes = append(fixes, fix)
+		// Add to the map
+		fixes[fix.Name] = fix
 	}
 
 	// Catch any other error
 	if err = rows.Err(); err != nil {
-		return &fixes, err
+		return fixes, err
 	}
 
 	// Success, return everything
-	return &fixes, nil
-}
-
-func SelectAllCachedTracks() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func DeleteAllCachedTracks() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func InsertFix() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func InsertTrack() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func InsertMultipleTracks() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func UpdateFix() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func UpdateTrack() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func DeleteFix() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func DeleteCachedTracksOneDay() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
-}
-
-func DeleteTrack() {
-	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
-
+	return fixes, nil
 }

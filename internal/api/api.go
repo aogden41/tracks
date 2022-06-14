@@ -2,12 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
-
 	"github.com/aogden41/tracks/internal/db"
 	"github.com/aogden41/tracks/internal/tracks"
+	"net/http"
+	"strconv"
 )
 
 // Route  "/"
@@ -15,47 +13,99 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "https://ganderoceanic.com/nat-track-api-usage", http.StatusPermanentRedirect)
 }
 
-// Route "/data/"
-func Get(w http.ResponseWriter, r *http.Request) {
-	tracks.ParseTracks(false)
+///
+/// NORMAL TRACKS
+///
+
+// Route "/data"
+func GetAllTracks(w http.ResponseWriter, r *http.Request) {
+	// SI units?
+	isMetres := true // Default
+	siVal, err := strconv.ParseBool(r.URL.Query().Get("si"))
+	if err != nil || !siVal { // If not
+		isMetres = false
+	}
+
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Parse tracks and return
+	tracks, err := tracks.ParseTracks(isMetres)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	// Encode and return
+	json.NewEncoder(w).Encode(&tracks)
 }
+
+// Route "/data/{track_id}"
+func GetOneTrack(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+func UpdateOneTrack(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeleteOneTrack(w http.ResponseWriter, r *http.Request) {
+
+}
+
+///
+/// EVENT TRACKS
+///
 
 // Route "/event"
-func GetEvent(w http.ResponseWriter, r *http.Request) {
-	// Fetch data
-	path := "https://ganderoceanicoca.ams3.cdn.digitaloceanspaces.com/resources/data/eventTracks.json"
-	res, err := http.Get(path)
+func GetAllEventTracks(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
 
-	// Check for errors then defer
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	defer res.Body.Close()
-
-	// Read bytes and output
-	bytes, _ := io.ReadAll(res.Body)
-	fmt.Fprintf(w, string(bytes))
 }
+
+// Route "/event/{track_id}"
+func GetOneEventTrack(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+func PostOneEventTrack(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func PostManyEventTracks(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeleteOneEventTrack(w http.ResponseWriter, r *http.Request) {
+
+}
+
+///
+/// CONCORDE TRACKS
+///
 
 // Route "/concorde"
-func GetConcorde(w http.ResponseWriter, r *http.Request) {
-	// Fetch data
-	path := "https://ganderoceanicoca.ams3.cdn.digitaloceanspaces.com/resources/data/concordeTracks.json"
-	res, err := http.Get(path)
+func GetAllConcordeTracks(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
 
-	// Check for errors then defer
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	defer res.Body.Close()
-
-	// Read bytes and output
-	bytes, _ := io.ReadAll(res.Body)
-	fmt.Fprintf(w, string(bytes))
 }
 
+// Route "/concorde/{track_id}"
+func GetOneConcordeTrack(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+///
+/// FIXES
+///
+
 // Route "/fixes"
-func GetFixes(w http.ResponseWriter, r *http.Request) {
+func GetAllFixes(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
 	// Fetch fixes and check error
 	fixes, err := db.SelectFixes()
 	if err != nil {
@@ -64,4 +114,18 @@ func GetFixes(w http.ResponseWriter, r *http.Request) {
 
 	// Encode and return
 	json.NewEncoder(w).Encode(fixes)
+}
+
+// Route "/fixes/{fix_name}"
+func GetOneFix(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+}
+
+func PostOneFix(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdateOneFix(w http.ResponseWriter, r *http.Request) {
+
 }

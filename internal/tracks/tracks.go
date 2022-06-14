@@ -1,14 +1,13 @@
 package tracks
 
 import (
+	"github.com/aogden41/tracks/internal/db"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
-
-	"github.com/aogden41/tracks/internal/db"
 )
 
 // Constants
@@ -18,11 +17,17 @@ const trackUrl = "https://www.notams.faa.gov/common/nat.html"
 var months = [12]string{"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"}
 
 // Parse the track data
-func ParseTracks(isMetres bool) {
+func ParseTracks(isMetres bool) (*[]db.Track, error) {
+	// First get all fixes from the database and error check
+	fixes, err := db.SelectFixes()
+	if err != nil {
+		return nil, err
+	}
+
 	// Download the tracks
 	tracksRes, err := http.Get(trackUrl)
 
-	// Returned string data from files
+	// Returned string data from NAT message
 	var natData string
 
 	// Handle any error from web requests
@@ -33,33 +38,36 @@ func ParseTracks(isMetres bool) {
 	// Fetching is done, defer closure until end of function
 	defer tracksRes.Body.Close()
 
-	// Get bytes and assign string values
+	// Get bytes and assign data
 	bytes, _ := io.ReadAll(tracksRes.Body)
 	natData = string(bytes) // Track message
 
 	// Split the data
 	natDataLines := strings.Split(string(natData), "\n")
 
-	// Keep track of line numbers to get correct track validity
-	var lineNumbers []int
-
 	// Store extracted track slices
 	var trackSlices [][]string
 
 	// Store data currently being processed
 	var track []string
-	var validities []string
+	var trackValidities map[string][2]int64 = make(map[string][2]int64)
 	var tmi string
-	var validFrom time.Time
-	var validTo time.Time
+	var validFrom time.Time = time.Now() // Initial value
+	var validTo time.Time = time.Now()   // Initial value
 
 	// Flag to get the next 2 lines for a track
 	getNextTwo := 0
 
+	// Store current validity section
 	// Iterate through
 	for i := 0; i < len(natDataLines); i++ {
 		// Rune slice of current line
 		lineRunes := []rune(natDataLines[i])
+
+		// Continue if the line is just empty
+		if len(natDataLines[i]) == 0 {
+			continue
+		}
 
 		// If the row is a track (we assume this if the structure is a letter then a space then another 2 letters, or if a track is already being processed)
 		if (unicode.IsLetter(lineRunes[0]) && unicode.IsSpace(lineRunes[1]) && unicode.IsLetter(lineRunes[2]) && unicode.IsLetter(lineRunes[3])) || getNextTwo > 0 {
@@ -67,8 +75,8 @@ func ParseTracks(isMetres bool) {
 			if getNextTwo > 2 {
 				getNextTwo = 0
 				trackSlices = append(trackSlices, track)
+				trackValidities[string(track[0][0])] = [2]int64{validFrom.Unix(), validTo.Unix()}
 				track = []string{}
-				lineNumbers = append(lineNumbers, i-2)
 				continue
 			}
 
@@ -93,28 +101,30 @@ func ParseTracks(isMetres bool) {
 				reached := false
 
 				// Check if the line contains a month
-				if strings.Contains(natDataLines[i], months[j]) {
+				if strings.HasPrefix(natDataLines[i], months[j]+" ") {
 					// Split the to and from times
 					splitString := strings.Split(natDataLines[i], " TO ")
 					validFromSplit := strings.Split(splitString[0][4:], "/")
 					validToSplit := strings.Split(splitString[1][4:], "/")
 
+					// Get rid of any crap on the end
+					if len(validToSplit[1]) > 5 {
+						validToSplit = []string{validToSplit[0], validToSplit[1][:5]}
+					}
+
 					// Valid from
 					validFromDay, _ := strconv.Atoi(validFromSplit[0])
-					validFromHour, _ := strconv.Atoi(validFromSplit[1][0:2])
+					validFromHour, _ := strconv.Atoi(validFromSplit[1][:2])
 					validFromMinute, _ := strconv.Atoi(validFromSplit[1][2:])
 
 					// Valid to
 					validToDay, _ := strconv.Atoi(validToSplit[0])
-					validToHour, _ := strconv.Atoi(validToSplit[1][0:2])
+					validToHour, _ := strconv.Atoi(validToSplit[1][:2])
 					validToMinute, _ := strconv.Atoi(validToSplit[1][2:])
 
 					// Set validity
 					validFrom = time.Date(time.Now().UTC().Year(), time.Month(j+1), validFromDay, validFromHour, validFromMinute, 0, 0, time.UTC)
 					validTo = time.Date(time.Now().UTC().Year(), time.Month(j+1), validToDay, validToHour, validToMinute, 0, 0, time.UTC)
-
-					// Append
-					validities = append(validities, strconv.Itoa(int(validFrom.Unix()))+"?"+strconv.Itoa(int(validTo.Unix()))+"?"+strconv.Itoa(i))
 
 					// Terminate loop
 					reached = true
@@ -128,7 +138,6 @@ func ParseTracks(isMetres bool) {
 		}
 	}
 
-	// TODO: half waypoints
 	// Final return list
 	var finalTracks []db.Track
 
@@ -166,5 +175,94 @@ func ParseTracks(isMetres bool) {
 			}
 		}
 
+		// Translate route strings into decimal coordinates
+		route := strings.Split(track[0][2:], " ")
+		var finalRoute []db.Fix
+		for _, point := range route {
+			// Check if the point is a coordinate
+			if strings.Contains(point, "/") {
+				// Lat/lon to use
+				latlon, err := ParseSlashedCoordinate(point)
+				if err != nil {
+					return nil, err
+				}
+				// Append fix
+				finalRoute = append(finalRoute, db.Fix{Name: point, Latitude: latlon[0], Longitude: latlon[1]})
+			} else { // The point is a waypoint
+				// Append waypoint
+				finalRoute = append(finalRoute, fixes[point])
+			}
+		}
+
+		// Finally, build the track object
+		trackObj := db.Track{
+			ID:           string(track[0][0]),
+			TMI:          tmi,
+			Route:        finalRoute,
+			Direction:    dir,
+			FlightLevels: flightLevels,
+			ValidFrom:    trackValidities[string(track[0][0])][0],
+			ValidTo:      trackValidities[string(track[0][0])][1],
+		}
+
+		// Finally, append the track
+		finalTracks = append(finalTracks, trackObj)
 	}
+
+	// Return
+	return &finalTracks, nil
+}
+
+// Parse a coordinate in the format 'XX/XX'
+func ParseSlashedCoordinate(point string) ([2]float64, error) {
+	// Lat/lon to return
+	var latitude float64
+	var longitude float64
+
+	// Split the point
+	pointSplit := strings.Split(point, "/")
+
+	// Parse latitude
+	if len(pointSplit[0]) > 2 {
+		// Significant digits (first 2 digits)
+		s := pointSplit[0][:2]
+		// Decimal places (everything else)
+		d := pointSplit[0][2:]
+		// Put back together
+		var err error
+		latitude, err = strconv.ParseFloat(strings.Join([]string{s, d}, "."), 64)
+		if err != nil { // Error check
+			return [2]float64{0, 0}, err
+		}
+	} else {
+		// Latitude isn't fractional, return float for consistency
+		var err error
+		latitude, err = strconv.ParseFloat(pointSplit[0], 64)
+		if err != nil { // Error check
+			return [2]float64{0, 0}, err
+		}
+	}
+
+	// Parse longitude
+	if len(pointSplit[1]) > 2 {
+		// Significant digits (first 2 digits)
+		s := pointSplit[1][:2]
+		// Decimal places (everything else)
+		d := pointSplit[1][2:]
+		// Put back together
+		var err error
+		longitude, err = strconv.ParseFloat(strings.Join([]string{s, d}, "."), 64)
+		if err != nil { // Error check
+			return [2]float64{0, 0}, err
+		}
+	} else {
+		// Longitude isn't fractional, return float for consistency
+		var err error
+		longitude, err = strconv.ParseFloat(pointSplit[1], 64)
+		if err != nil { // Error check
+			return [2]float64{0, 0}, err
+		}
+	}
+
+	return [2]float64{latitude, longitude}, nil
 }

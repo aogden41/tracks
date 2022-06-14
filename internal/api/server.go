@@ -9,13 +9,24 @@ import (
 
 // Routing
 func RouteEndpoints(router *mux.Router) {
-	// Routes
+	// Index/others
 	router.HandleFunc("/", Index).Methods("GET")
-	router.HandleFunc("/data", Get).Methods("GET")
-	router.HandleFunc("/fixes", GetFixes).Methods("GET")
-	router.HandleFunc("/concorde", GetConcorde).Methods("GET")
-	router.HandleFunc("/event", GetEvent).Methods("GET")
 
+	// Normal tracks
+	router.HandleFunc("/data", GetAllTracks).Methods("GET")
+	router.HandleFunc("/data/{track_id}", GetOneTrack).Methods("GET")
+
+	// Concorde tracks
+	router.HandleFunc("/concorde", GetAllConcordeTracks).Methods("GET")
+	router.HandleFunc("/concorde/{track_id}", GetOneTrack).Methods("GET")
+
+	// Event tracks
+	router.HandleFunc("/event", GetAllEventTracks).Methods("GET")
+	router.HandleFunc("/concorde/{track_id}", GetOneTrack).Methods("GET")
+
+	// Fixes
+	router.HandleFunc("/fixes", GetAllFixes).Methods("GET")
+	router.HandleFunc("/fixes/{fix_name}", GetOneFix).Methods("GET")
 }
 
 // Run the server
