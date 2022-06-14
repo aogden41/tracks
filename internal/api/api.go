@@ -14,7 +14,8 @@ import (
 
 // GET /
 func Index(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "https://ganderoceanic.com/nat-track-api-usage", http.StatusPermanentRedirect)
+	// Redirect to info page
+	http.Redirect(w, r, "https://ganderoceanic.ca/nat-track-api-usage", http.StatusPermanentRedirect)
 }
 
 ///
@@ -44,38 +45,32 @@ func GetAllCurrentTracks(w http.ResponseWriter, r *http.Request) {
 
 // GET /current/{track_id}
 func GetCurrentTrack(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // GET /current/eastbound
 func GetCurrentEastboundTracks(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // GET /current/westbound
 func GetCurrentWestboundTracks(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // GET /current/now
 func GetCurrentTracksValidNow(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // GET /current/later
 func GetCurrentTracksValidLater(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // GET /current/earlier
 func GetCurrentTracksValidEarlier(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 ///
@@ -84,37 +79,32 @@ func GetCurrentTracksValidEarlier(w http.ResponseWriter, r *http.Request) {
 
 // GET /cached
 func GetAllCachedTracks(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // GET /cached/{track_id}
 func GetCachedTrack(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // GET /cached/days/{days_old}
 func GetCachedTracksByDaysOld(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // GET /cached/eastbound
 func GetCachedEastboundTracks(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // GET /cached/westbound
 func GetCachedWestboundTracks(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // GET /cached/check/{track_id}
 func CheckIsTrackCached(w http.ResponseWriter, r *http.Request) {
-
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 ///
@@ -123,25 +113,23 @@ func CheckIsTrackCached(w http.ResponseWriter, r *http.Request) {
 
 // GET /event
 func GetAllEventTracks(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 
 }
 
 // GET /event/{track_id}
 func GetEventTrack(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // POST /event/{track_obj}
 func PostEventTrack(w http.ResponseWriter, r *http.Request) {
-
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // DELETE /event/{track_id}
 func DeleteEventTrack(w http.ResponseWriter, r *http.Request) {
-
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 ///
@@ -150,15 +138,13 @@ func DeleteEventTrack(w http.ResponseWriter, r *http.Request) {
 
 // GET /concorde
 func GetAllConcordeTracks(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 
 }
 
 // GET /concorde/{track_id}
 func GetConcordeTrack(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 ///
@@ -181,21 +167,20 @@ func GetAllFixes(w http.ResponseWriter, r *http.Request) {
 
 // GET /fixes/{fix_name}
 func GetFix(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // POST /fixes/{fix_obj}
 func PostFix(w http.ResponseWriter, r *http.Request) {
-
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // UPDATE /fixes/{fix_obj}
 func UpdateFix(w http.ResponseWriter, r *http.Request) {
-
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
 // DELETE /fixes/{fix_name}
 func DeleteFix(w http.ResponseWriter, r *http.Request) {
-
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
