@@ -18,7 +18,7 @@ type DbConfig struct {
 }
 
 // Create Postgres connection
-func Connect() (ctx *sql.DB) {
+func Connect() (db *sql.DB) {
 	// Connection config
 	var dbc DbConfig = DbConfig{os.Getenv("HOST"), os.Getenv("PORT"), os.Getenv("USER"), os.Getenv("PASS"), os.Getenv("DB_NAME")}
 
@@ -48,14 +48,14 @@ func Connect() (ctx *sql.DB) {
 // Return a map of fixes
 func SelectFixes() (fixMap map[string]Fix, err error) {
 	// Connect and defer
-	ctx := Connect()
-	defer ctx.Close()
+	db := Connect()
+	defer db.Close()
 
 	// Statement
 	query := `SELECT name, latitude, longitude FROM tracks.fixes;`
 
 	// Perform query
-	rows, err := ctx.Query(query)
+	rows, err := db.Query(query)
 	if err != nil {
 		panic(err)
 	}

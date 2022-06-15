@@ -1,10 +1,9 @@
 package main
 
 import (
-	"log"
-
 	"github.com/aogden41/tracks/internal/api"
 	"github.com/joho/godotenv"
+	"log"
 )
 
 func init() {
@@ -17,7 +16,12 @@ func init() {
 func main() {
 	go func() {
 		// Run the server
-		api.Run()
+		s := api.Server{}
+		err := s.Run()
+		if err != nil {
+			// Error
+			log.Fatal(err)
+		}
 	}()
 	select {} // Graceful shutdown
 }

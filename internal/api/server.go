@@ -1,75 +1,99 @@
 package api
 
 import (
+	"github.com/aogden41/tracks/internal/api/handlers"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 )
 
+type Server struct {
+	Router *mux.Router
+}
+
 // Routing
-func RouteEndpoints(router *mux.Router) {
+func (s Server) Initialise() (router *mux.Router) {
+	// Initialise router
+	r := mux.NewRouter()
+
 	// Index
 	/////////
-	router.HandleFunc("/", Index).Methods("GET")
+	r.HandleFunc("/", handlers.Index).Methods("GET")
 
 	// Current tracks
 	/////////////////
+	// Router
+	rCurrentTracks := r.PathPrefix("/current").Subrouter()
 	// GET
-	router.HandleFunc("/current", GetAllCurrentTracks).Methods("GET")
-	router.HandleFunc("/current/{track_id}", GetCurrentTrack).Methods("GET")
-	router.HandleFunc("/current/eastbound", GetCurrentEastboundTracks).Methods("GET")
-	router.HandleFunc("/current/westbound", GetCurrentWestboundTracks).Methods("GET")
-	router.HandleFunc("/current/now", GetCurrentTracksValidNow).Methods("GET")
-	router.HandleFunc("/current/later", GetCurrentTracksValidLater).Methods("GET")
-	router.HandleFunc("/current/earlier", GetCurrentTracksValidEarlier).Methods("GET")
+	rCurrentTracks.HandleFunc("", handlers.GetAllCurrentTracks).Methods("GET")
+	rCurrentTracks.HandleFunc("/", handlers.GetAllCurrentTracks).Methods("GET")
+	rCurrentTracks.HandleFunc("/{track_id}", handlers.GetCurrentTrack).Methods("GET")
+	rCurrentTracks.HandleFunc("/eastbound", handlers.GetCurrentEastboundTracks).Methods("GET")
+	rCurrentTracks.HandleFunc("/westbound", handlers.GetCurrentWestboundTracks).Methods("GET")
+	rCurrentTracks.HandleFunc("/now", handlers.GetCurrentTracksValidNow).Methods("GET")
+	rCurrentTracks.HandleFunc("/later", handlers.GetCurrentTracksValidLater).Methods("GET")
+	rCurrentTracks.HandleFunc("/earlier", handlers.GetCurrentTracksValidEarlier).Methods("GET")
 
 	// Cached tracks
 	////////////////
+	// Router
+	rCachedTracks := r.PathPrefix("/cached").Subrouter()
 	// GET
-	router.HandleFunc("/cached", GetAllCachedTracks).Methods("GET")
-	router.HandleFunc("/cached/{track_id}", GetCachedTrack).Methods("GET")
-	router.HandleFunc("/cached/days/{days_old}", GetCachedTracksByDaysOld).Methods("GET")
-	router.HandleFunc("/cached/eastbound", GetCachedEastboundTracks).Methods("GET")
-	router.HandleFunc("/cached/westbound", GetCachedWestboundTracks).Methods("GET")
-	router.HandleFunc("/cached/check/{track_id}", CheckIsTrackCached).Methods("GET")
+	rCachedTracks.HandleFunc("", handlers.GetAllCachedTracks).Methods("GET")
+	rCachedTracks.HandleFunc("/", handlers.GetAllCachedTracks).Methods("GET")
+	rCachedTracks.HandleFunc("/{track_id}", handlers.GetCachedTrack).Methods("GET")
+	rCachedTracks.HandleFunc("/days/{days_old}", handlers.GetCachedTracksByDaysOld).Methods("GET")
+	rCachedTracks.HandleFunc("/eastbound", handlers.GetCachedEastboundTracks).Methods("GET")
+	rCachedTracks.HandleFunc("/westbound", handlers.GetCachedWestboundTracks).Methods("GET")
+	rCachedTracks.HandleFunc("/check/{track_id}", handlers.CheckIsTrackCached).Methods("GET")
 
 	// Event tracks
 	///////////////
+	// Router
+	rEventTracks := r.PathPrefix("/event").Subrouter()
 	// GET
-	router.HandleFunc("/event", GetAllEventTracks).Methods("GET")
-	router.HandleFunc("/event/{track_id}", GetEventTrack).Methods("GET")
+	rEventTracks.HandleFunc("", handlers.GetAllEventTracks).Methods("GET")
+	rEventTracks.HandleFunc("/", handlers.GetAllEventTracks).Methods("GET")
+	rEventTracks.HandleFunc("/{track_id}", handlers.GetEventTrack).Methods("GET")
 	// POST
-	router.HandleFunc("/event/{track_obj}", PostEventTrack).Methods("POST")
+	rEventTracks.HandleFunc("/{track_obj}", handlers.PostEventTrack).Methods("POST")
 	// DELETE
-	router.HandleFunc("/event/{track_id}", DeleteEventTrack).Methods("DELETE")
+	rEventTracks.HandleFunc("/{track_id}", handlers.DeleteEventTrack).Methods("DELETE")
 
 	// Concorde tracks
 	//////////////////
+	rConcordeTracks := r.PathPrefix("/concorde").Subrouter()
 	// GET
-	router.HandleFunc("/concorde", GetAllConcordeTracks).Methods("GET")
-	router.HandleFunc("/concorde/{track_id}", GetConcordeTrack).Methods("GET")
+	rConcordeTracks.HandleFunc("", handlers.GetAllConcordeTracks).Methods("GET")
+	rConcordeTracks.HandleFunc("/", handlers.GetAllConcordeTracks).Methods("GET")
+	rConcordeTracks.HandleFunc("/{track_id}", handlers.GetConcordeTrack).Methods("GET")
 
 	// Fixes
 	////////
+	// Router
+	rFixes := r.PathPrefix("/fixes").Subrouter()
 	// GET
-	router.HandleFunc("/fixes", GetAllFixes).Methods("GET")
-	router.HandleFunc("/fixes/{fix_name}", GetFix).Methods("GET")
+	rFixes.HandleFunc("", handlers.GetAllFixes).Methods("GET")
+	rFixes.HandleFunc("/", handlers.GetAllFixes).Methods("GET")
+	rFixes.HandleFunc("/{fix_name}", handlers.GetFix).Methods("GET")
 	// POST
-	router.HandleFunc("/fixes/{fix_obj}", PostFix).Methods("POST")
+	rFixes.HandleFunc("/{fix_obj}", handlers.PostFix).Methods("POST")
 	// UPDATE
-	router.HandleFunc("/fixes/{fix_obj}", UpdateFix).Methods("UPDATE")
+	rFixes.HandleFunc("/{fix_obj}", handlers.UpdateFix).Methods("UPDATE")
 	// DELETE
-	router.HandleFunc("/fixes/{fix_name}", DeleteFix).Methods("DELETE")
+	rFixes.HandleFunc("/{fix_name}", handlers.DeleteFix).Methods("DELETE")
+
+	// Return the parent router
+	return r
 }
 
 // Run the server
-func Run() {
+func (s Server) Run() error {
 	// Initialise router
-	router := mux.NewRouter()
-
-	// Begin routing endpoints
-	RouteEndpoints(router)
+	router := s.Initialise()
 
 	// Now serve
-	log.Fatal(http.ListenAndServe(":5000", router))
+	err := http.ListenAndServe(":5000", router)
+
+	// Error
+	return err
 }
