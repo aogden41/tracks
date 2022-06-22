@@ -1,14 +1,16 @@
 package tracks
 
 import (
-	"github.com/aogden41/tracks/internal/db"
-	"github.com/aogden41/tracks/internal/db/models"
 	"io"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
+
+	"github.com/aogden41/tracks/internal/db"
+	"github.com/aogden41/tracks/internal/db/models"
 )
 
 // Constants
@@ -228,7 +230,14 @@ func ParseSlashedCoordinate(point string) ([2]float64, error) {
 		// Significant digits (first 2 digits)
 		s := pointSplit[0][:2]
 		// Decimal places (everything else)
-		d := pointSplit[0][2:]
+		var d string
+
+		// Since lat/lon minutes are out of 60, parse them to decimal (i.e. 30 becomes 50))
+		d1, _ := strconv.ParseInt(string(pointSplit[0][2:][0]), 10, 8)
+		d2, _ := strconv.ParseInt(string(pointSplit[0][2:][1]), 10, 8)
+		d1 = int64(math.RoundToEven(10.0 * (float64(d1) / 6.0))) // Eg. 10 * (3/6) is 0.5, because 3/6 is 5
+		d = strconv.Itoa(int(d1)) + strconv.Itoa(int(d2))
+
 		// Put back together
 		var err error
 		latitude, err = strconv.ParseFloat(strings.Join([]string{s, d}, "."), 64)
@@ -249,7 +258,14 @@ func ParseSlashedCoordinate(point string) ([2]float64, error) {
 		// Significant digits (first 2 digits)
 		s := pointSplit[1][:2]
 		// Decimal places (everything else)
-		d := pointSplit[1][2:]
+		var d string
+
+		// Since lat/lon minutes are out of 60, parse them to decimal (i.e. 30 becomes 50))
+		d1, _ := strconv.ParseInt(string(pointSplit[1][2:][0]), 10, 8)
+		d2, _ := strconv.ParseInt(string(pointSplit[1][2:][1]), 10, 8)
+		d1 = int64(math.RoundToEven(10.0 * (float64(d1) / 6.0))) // Eg. 10 * (3/6) is 0.5, because 3/6 is 5
+		d = strconv.Itoa(int(d1)) + strconv.Itoa(int(d2))
+
 		// Put back together
 		var err error
 		longitude, err = strconv.ParseFloat(strings.Join([]string{s, d}, "."), 64)
