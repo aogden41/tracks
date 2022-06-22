@@ -18,7 +18,7 @@ type DbConfig struct {
 }
 
 // Create Postgres connection
-func Connect() (db *sql.DB) {
+func Connect() *sql.DB {
 	// Connection config
 	var dbc DbConfig = DbConfig{os.Getenv("HOST"), os.Getenv("PORT"), os.Getenv("USER"), os.Getenv("PASS"), os.Getenv("DB_NAME")}
 
@@ -43,43 +43,4 @@ func Connect() (db *sql.DB) {
 	// Log & return
 	fmt.Println("Postgres connection succeeded.")
 	return db
-}
-
-// Return a map of fixes
-func SelectFixes() (fixMap map[string]Fix, err error) {
-	// Connect and defer
-	db := Connect()
-	defer db.Close()
-
-	// Statement
-	query := `SELECT name, latitude, longitude FROM tracks.fixes;`
-
-	// Perform query
-	rows, err := db.Query(query)
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-
-	// Map to return
-	fixes := make(map[string]Fix)
-
-	// Iterate through rows
-	for rows.Next() {
-		// Create fix and error check
-		var fix Fix
-		if err := rows.Scan(&fix.Name, &fix.Latitude, &fix.Longitude); err != nil {
-			return fixes, err
-		}
-		// Add to the map
-		fixes[fix.Name] = fix
-	}
-
-	// Catch any other error
-	if err = rows.Err(); err != nil {
-		return fixes, err
-	}
-
-	// Success, return everything
-	return fixes, nil
 }

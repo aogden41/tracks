@@ -18,6 +18,11 @@ func PostEventTrack(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
 }
 
+// PUT /event/{track_obj}
+func PutEventTrack(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
+}
+
 // DELETE /event/{track_id}
 func DeleteEventTrack(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)

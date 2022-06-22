@@ -1,4 +1,6 @@
-package db
+package models
+
+import "strings"
 
 // Direction enum
 type Direction int32
@@ -23,6 +25,15 @@ type Fix struct {
 	Name      string
 	Latitude  float64
 	Longitude float64
+	IsValid   bool
+}
+
+func CreateValidFix(name string, lat float64, lon float64) Fix {
+	return Fix{Name: strings.ToUpper(name), Latitude: lat, Longitude: lon, IsValid: true}
+}
+
+func CreateInvalidFix() Fix {
+	return Fix{IsValid: false}
 }
 
 // Track model

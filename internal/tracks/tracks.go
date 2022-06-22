@@ -2,6 +2,7 @@ package tracks
 
 import (
 	"github.com/aogden41/tracks/internal/db"
+	"github.com/aogden41/tracks/internal/db/models"
 	"io"
 	"net/http"
 	"strconv"
@@ -17,7 +18,7 @@ const trackUrl = "https://www.notams.faa.gov/common/nat.html"
 var months = [12]string{"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"}
 
 // Parse the track data
-func ParseTracks(isMetres bool) (*[]db.Track, error) {
+func ParseTracks(isMetres bool) (*[]models.Track, error) {
 	// First get all fixes from the database and error check
 	fixes, err := db.SelectFixes()
 	if err != nil {
@@ -139,26 +140,26 @@ func ParseTracks(isMetres bool) (*[]db.Track, error) {
 	}
 
 	// Final return list
-	var finalTracks []db.Track
+	var finalTracks []models.Track
 
 	// Build track objects
 	for _, track := range trackSlices {
 		// Initialise
-		dir := db.UNKNOWN
+		dir := models.UNKNOWN
 		var flightLevels []int
 
 		// Check direction and set flight levels
 		var rawFlightLevels []string
 		if strings.Contains(strings.ToUpper(track[1]), "EAST LVLS NIL") {
 			// Set direction
-			dir = db.WEST
+			dir = models.WEST
 
 			// Westbound flight levels
 			rawFlightLevels = strings.Split(track[2], " ")[2:]
 
 		} else {
 			// Set direction
-			dir = db.EAST
+			dir = models.EAST
 
 			// Westbound flight levels
 			rawFlightLevels = strings.Split(track[1], " ")[2:]
@@ -177,7 +178,7 @@ func ParseTracks(isMetres bool) (*[]db.Track, error) {
 
 		// Translate route strings into decimal coordinates
 		route := strings.Split(track[0][2:], " ")
-		var finalRoute []db.Fix
+		var finalRoute []models.Fix
 		for _, point := range route {
 			// Check if the point is a coordinate
 			if strings.Contains(point, "/") {
@@ -187,7 +188,7 @@ func ParseTracks(isMetres bool) (*[]db.Track, error) {
 					return nil, err
 				}
 				// Append fix
-				finalRoute = append(finalRoute, db.Fix{Name: point, Latitude: latlon[0], Longitude: latlon[1]})
+				finalRoute = append(finalRoute, models.CreateValidFix(point, latlon[0], latlon[1]))
 			} else { // The point is a waypoint
 				// Append waypoint
 				finalRoute = append(finalRoute, fixes[point])
@@ -195,7 +196,7 @@ func ParseTracks(isMetres bool) (*[]db.Track, error) {
 		}
 
 		// Finally, build the track object
-		trackObj := db.Track{
+		trackObj := models.Track{
 			ID:           string(track[0][0]),
 			TMI:          tmi,
 			Route:        finalRoute,
