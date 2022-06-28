@@ -71,6 +71,7 @@ func (s Server) RouteFixes(r *mux.Router) {
 	// GET
 	r.HandleFunc("", handlers.GetAllFixes).Methods("GET")
 	r.HandleFunc("/", handlers.GetAllFixes).Methods("GET")
+	r.HandleFunc("/concorde", handlers.GetConcordeFixes).Methods("GET")
 	r.HandleFunc("/{fix_name}", handlers.GetFix).Methods("GET")
 	// POST
 	r.HandleFunc("", handlers.PostFix).Methods("POST")

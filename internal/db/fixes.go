@@ -69,6 +69,48 @@ func SelectFix(f string) (models.Fix, error) {
 	return fix, nil
 }
 
+func SelectConcordeFixes() (map[string]models.Fix, error) {
+	// Connect and defer
+	db := Connect()
+	defer db.Close()
+
+	// Statement
+	query := `SELECT name, latitude, longitude FROM tracks.fixes WHERE CAST(type AS TEXT) LIKE '1';`
+
+	// Perform query
+	rows, err := db.Query(query)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	// Map to return
+	fixes := make(map[string]models.Fix)
+
+	// Iterate through rows
+	for rows.Next() {
+		// Create fix and error check
+		var fix models.Fix
+		if err := rows.Scan(&fix.Name, &fix.Latitude, &fix.Longitude); err != nil {
+			return nil, err
+		}
+		if len(fix.Name) > 5 {
+			fix.Name = fix.Name[:5]
+		}
+		// Add to the map
+		fix.IsValid = true
+		fixes[fix.Name] = fix
+	}
+
+	// Catch any other error
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Success, return everything
+	return fixes, nil
+}
+
 // Insert a fix
 func InsertFix(f *models.Fix) error {
 	// Connect and defer

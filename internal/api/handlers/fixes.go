@@ -40,6 +40,21 @@ func GetFix(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GET /fixes
+func GetConcordeFixes(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Fetch fixes and check error
+	fixes, err := db.SelectConcordeFixes()
+	if err != nil {
+		panic(err)
+	}
+
+	// Encode
+	json.NewEncoder(w).Encode(fixes)
+}
+
 // POST /fixes
 func PostFix(w http.ResponseWriter, r *http.Request) {
 	// Set json header
