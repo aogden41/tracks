@@ -22,12 +22,12 @@ func (s Server) RouteCurrent(r *mux.Router) {
 	// GET
 	r.HandleFunc("", handlers.GetAllCurrentTracks).Methods("GET")
 	r.HandleFunc("/", handlers.GetAllCurrentTracks).Methods("GET")
-	r.HandleFunc("/{track_id}", handlers.GetCurrentTrack).Methods("GET")
 	r.HandleFunc("/eastbound", handlers.GetCurrentEastboundTracks).Methods("GET")
 	r.HandleFunc("/westbound", handlers.GetCurrentWestboundTracks).Methods("GET")
 	r.HandleFunc("/now", handlers.GetCurrentTracksValidNow).Methods("GET")
 	r.HandleFunc("/later", handlers.GetCurrentTracksValidLater).Methods("GET")
 	r.HandleFunc("/earlier", handlers.GetCurrentTracksValidEarlier).Methods("GET")
+	r.HandleFunc("/{track_id}", handlers.GetCurrentTrack).Methods("GET")
 }
 
 // Cached routes
@@ -35,10 +35,10 @@ func (s Server) RouteCached(r *mux.Router) {
 	// GET
 	r.HandleFunc("", handlers.GetAllCachedTracks).Methods("GET")
 	r.HandleFunc("/", handlers.GetAllCachedTracks).Methods("GET")
-	r.HandleFunc("/{track_id}", handlers.GetCachedTrack).Methods("GET")
-	r.HandleFunc("/days/{days_old}", handlers.GetCachedTracksByDaysOld).Methods("GET")
 	r.HandleFunc("/eastbound", handlers.GetCachedEastboundTracks).Methods("GET")
 	r.HandleFunc("/westbound", handlers.GetCachedWestboundTracks).Methods("GET")
+	r.HandleFunc("/{track_id}", handlers.GetCachedTrack).Methods("GET")
+	r.HandleFunc("/days/{days_old}", handlers.GetCachedTracksByDaysOld).Methods("GET")
 	r.HandleFunc("/check/{track_id}", handlers.CheckIsTrackCached).Methods("GET")
 }
 

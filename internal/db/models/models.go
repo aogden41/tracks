@@ -6,7 +6,7 @@ import "strings"
 type Direction int32
 
 const (
-	UNKNOWN Direction = iota
+	UNKNOWN Direction = iota // Default direction
 	WEST
 	EAST
 )

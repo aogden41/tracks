@@ -20,7 +20,7 @@ const trackUrl = "https://www.notams.faa.gov/common/nat.html"
 var months = [12]string{"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"}
 
 // Parse the track data
-func ParseTracks(isMetres bool) (*[]models.Track, error) {
+func ParseTracks(isMetres bool, direction models.Direction) (map[string]models.Track, error) {
 	// First get all fixes from the database and error check
 	fixes, err := db.SelectFixes()
 	if err != nil {
@@ -96,7 +96,7 @@ func ParseTracks(isMetres bool) (*[]models.Track, error) {
 
 			// Add amendment character if it exists
 			if unicode.IsLetter(lineRunes[tmiStart+3]) {
-				tmi = tmi + string(natDataLines[i][tmiStart+4])
+				tmi = tmi + string(natDataLines[i][tmiStart+3])
 			}
 		} else {
 			// Convert validities
@@ -142,7 +142,7 @@ func ParseTracks(isMetres bool) (*[]models.Track, error) {
 	}
 
 	// Final return list
-	var finalTracks []models.Track
+	var finalTracks map[string]models.Track = make(map[string]models.Track)
 
 	// Build track objects
 	for _, track := range trackSlices {
@@ -208,12 +208,16 @@ func ParseTracks(isMetres bool) (*[]models.Track, error) {
 			ValidTo:      trackValidities[string(track[0][0])][1],
 		}
 
-		// Finally, append the track
-		finalTracks = append(finalTracks, trackObj)
+		// Finally, append the track but filter direction if argument supplied
+		if (direction == models.EAST && dir == models.WEST) || (direction == models.WEST && dir == models.EAST) {
+			continue
+		} else {
+			finalTracks[trackObj.ID] = trackObj
+		}
 	}
 
 	// Return
-	return &finalTracks, nil
+	return finalTracks, nil
 }
 
 // Parse a coordinate in the format 'XX/XX'
