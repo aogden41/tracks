@@ -20,7 +20,7 @@ const trackUrl = "https://www.notams.faa.gov/common/nat.html"
 var months = [12]string{"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"}
 
 // Parse the track data
-func ParseTracks(isMetres bool, direction models.Direction, currency models.Validity) (map[string]models.Track, error) {
+func ParseTracks(isMetres bool, direction models.Direction, validity models.Validity) (map[string]models.Track, error) {
 	// First get all fixes from the database and error check
 	fixes, err := db.SelectFixes()
 	if err != nil {
@@ -61,7 +61,6 @@ func ParseTracks(isMetres bool, direction models.Direction, currency models.Vali
 	// Flag to get the next 2 lines for a track
 	getNextTwo := 0
 
-	// Store current validity section
 	// Iterate through
 	for i := 0; i < len(natDataLines); i++ {
 		// Rune slice of current line
@@ -141,13 +140,39 @@ func ParseTracks(isMetres bool, direction models.Direction, currency models.Vali
 		}
 	}
 
-	// Let's check validities now so we can save on performance
-
 	// Final return list
 	var finalTracks map[string]models.Track = make(map[string]models.Track)
 
 	// Build track objects
 	for _, track := range trackSlices {
+		// Let's check validities now so we can save on performance
+		timeNow := time.Now().UTC()
+		tValidity := models.NA
+
+		// Convert unix stamp to time
+		validFrom = time.Unix(trackValidities[string(track[0][0])][0], 0)
+		validTo = time.Unix(trackValidities[string(track[0][0])][1], 0)
+
+		// validFrom is in the past but validTo is in the future, so track is valid now
+		if timeNow.After(validFrom) && timeNow.Before(validTo) {
+			tValidity = models.NOW
+		}
+		// validTo is in the past, therefore track was valid earlier
+		if timeNow.After(validTo) {
+			tValidity = models.EARLIER
+		}
+		// validFrom is in the future, therefore track is valid later
+		if timeNow.Before(validFrom) {
+			tValidity = models.LATER
+		}
+
+		// Check against the supplied validity
+		if validity != models.NA {
+			if tValidity != validity {
+				continue
+			}
+		}
+
 		// Initialise
 		dir := models.UNKNOWN
 		var flightLevels []int
