@@ -20,7 +20,7 @@ const trackUrl = "https://www.notams.faa.gov/common/nat.html"
 var months = [12]string{"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"}
 
 // Parse the track data
-func ParseTracks(isMetres bool, direction models.Direction) (map[string]models.Track, error) {
+func ParseTracks(isMetres bool, direction models.Direction, currency models.Validity) (map[string]models.Track, error) {
 	// First get all fixes from the database and error check
 	fixes, err := db.SelectFixes()
 	if err != nil {
@@ -140,6 +140,8 @@ func ParseTracks(isMetres bool, direction models.Direction) (map[string]models.T
 			}
 		}
 	}
+
+	// Let's check validities now so we can save on performance
 
 	// Final return list
 	var finalTracks map[string]models.Track = make(map[string]models.Track)

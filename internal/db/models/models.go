@@ -11,6 +11,16 @@ const (
 	EAST
 )
 
+// Currency enum
+type Validity int32
+
+const (
+	NA Validity = iota // Default direction
+	NOW
+	EARLIER
+	LATER
+)
+
 // Track type enum
 type TrackType int32
 

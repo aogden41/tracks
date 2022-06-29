@@ -25,7 +25,7 @@ func GetAllCurrentTracks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// Parse tracks and return
-	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN)
+	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.NA)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -51,7 +51,7 @@ func GetCurrentTrack(w http.ResponseWriter, r *http.Request) {
 	tid := strings.ToUpper(params["track_id"])
 
 	// Deserialise and display
-	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN)
+	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.NA)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -72,7 +72,7 @@ func GetCurrentEastboundTracks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// Parse tracks and return
-	tracks, err := tracks.ParseTracks(isMetres, models.EAST)
+	tracks, err := tracks.ParseTracks(isMetres, models.EAST, models.NA)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -93,7 +93,7 @@ func GetCurrentWestboundTracks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// Parse tracks and return
-	tracks, err := tracks.ParseTracks(isMetres, models.WEST)
+	tracks, err := tracks.ParseTracks(isMetres, models.WEST, models.NA)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -103,15 +103,66 @@ func GetCurrentWestboundTracks(w http.ResponseWriter, r *http.Request) {
 
 // GET /current/now
 func GetCurrentTracksValidNow(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
+	// SI units?
+	isMetres := true // Default
+	si, err := strconv.ParseBool(r.URL.Query().Get("si"))
+	if err != nil || !si { // If not
+		isMetres = false
+	}
+
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Parse tracks and return
+	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.NOW)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	// Encode and return
+	json.NewEncoder(w).Encode(tracks)
 }
 
 // GET /current/later
 func GetCurrentTracksValidLater(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
+	// SI units?
+	isMetres := true // Default
+	si, err := strconv.ParseBool(r.URL.Query().Get("si"))
+	if err != nil || !si { // If not
+		isMetres = false
+	}
+
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Parse tracks and return
+	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.LATER)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	// Encode and return
+	json.NewEncoder(w).Encode(tracks)
 }
 
 // GET /current/earlier
 func GetCurrentTracksValidEarlier(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
+	// SI units?
+	isMetres := true // Default
+	si, err := strconv.ParseBool(r.URL.Query().Get("si"))
+	if err != nil || !si { // If not
+		isMetres = false
+	}
+
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Parse tracks and return
+	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.EARLIER)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	// Encode and return
+	json.NewEncoder(w).Encode(tracks)
 }
