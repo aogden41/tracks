@@ -64,7 +64,6 @@ func SelectConcordeTracks() (map[string]models.Track, error) {
 
 		// Other variables
 		track.Type = models.CONCORDE
-		track.DaysOld = -1
 		track.TMI = "-1"
 
 		// Compile track and add to map
@@ -118,7 +117,6 @@ func SelectConcordeTrack(tk string) (models.Track, error) {
 
 	// Other variables
 	track.Type = models.CONCORDE
-	track.DaysOld = -1
 	track.TMI = "-1"
 
 	// Return selection

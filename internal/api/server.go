@@ -1,13 +1,16 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/aogden41/tracks/internal/api/handlers"
 	"github.com/gorilla/mux"
-	"net/http"
+	"github.com/robfig/cron/v3"
 )
 
 type Server struct {
-	Router *mux.Router
+	Router        *mux.Router
+	StoredMessage string
 }
 
 // Index routes
@@ -88,6 +91,10 @@ func (s Server) Run() error {
 	// Initialise router
 	s.Router = mux.NewRouter()
 
+	// Get the first message
+	s.StoredMessage = ""
+	CompareMessage(&s)
+
 	// Start routing
 	s.RouteIndex(s.Router.PathPrefix("").Subrouter())
 	s.RouteCurrent(s.Router.PathPrefix("/current").Subrouter())
@@ -95,6 +102,11 @@ func (s Server) Run() error {
 	s.RouteEvent(s.Router.PathPrefix("/event").Subrouter())
 	s.RouteConcorde(s.Router.PathPrefix("/concorde").Subrouter())
 	s.RouteFixes(s.Router.PathPrefix("/fixes").Subrouter())
+
+	// Every 10 minutes compare the message with what we have in memory
+	cron := cron.New()
+	cron.AddFunc("@every 10s", func() { CompareMessage(&s) })
+	cron.Start()
 
 	// Now serve
 	err := http.ListenAndServe(":5000", s.Router)

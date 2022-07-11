@@ -55,6 +55,5 @@ type Track struct {
 	Direction    Direction
 	ValidFrom    int64
 	ValidTo      int64
-	DaysOld      int
 	Type         TrackType
 }
