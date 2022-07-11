@@ -9,22 +9,32 @@ import (
 )
 
 func CompareMessage(server *Server) {
-	msg := tracks.DownloadTracks()
+	tracks, _ := tracks.ParseTracks(false, models.UNKNOWN, models.NA)
+	var tmi string
+
+	// Dodgy but works
+	for _, track := range tracks {
+		// Set TMI
+		tmi = track.TMI
+
+		// Break after first iteration, we have what we need
+		break
+	}
 
 	// Check if what we have matches what we've just obtained
-	if server.StoredMessage != msg {
+	if server.CurrentTMI != tmi {
 
-		// Update the stored message
-		server.StoredMessage = msg
+		// Update the stored TMI
+		server.CurrentTMI = tmi
 
 		// Run job
-		CacheJob(msg)
+		CacheJob()
 
 		return
 	}
 }
 
-func CacheJob(newMsg string) error {
+func CacheJob() error {
 	// Get all tracks parsed from this current message
 	tracks, err := tracks.ParseTracks(false, models.UNKNOWN, models.NA)
 	if err != nil {

@@ -1,10 +1,25 @@
 package handlers
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/aogden41/tracks/internal/db"
+)
 
 // GET /cached
 func GetAllCachedTracks(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "This function has not yet been implemented.", http.StatusNotImplemented)
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Fetch fixes and check error
+	tracks, err := db.SelectCachedTracks()
+	if err != nil {
+		panic(err)
+	}
+
+	// Encode
+	json.NewEncoder(w).Encode(tracks)
 }
 
 // GET /cached/{track_id}

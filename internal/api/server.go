@@ -9,8 +9,8 @@ import (
 )
 
 type Server struct {
-	Router        *mux.Router
-	StoredMessage string
+	Router     *mux.Router
+	CurrentTMI string
 }
 
 // Index routes
@@ -91,8 +91,8 @@ func (s Server) Run() error {
 	// Initialise router
 	s.Router = mux.NewRouter()
 
-	// Get the first message
-	s.StoredMessage = ""
+	// First TMI
+	s.CurrentTMI = ""
 	CompareMessage(&s)
 
 	// Start routing
