@@ -17,13 +17,6 @@ type Server struct {
 	CurrentTMI string
 }
 
-// Index/docs routes
-func (s Server) RouteIndex(r *mux.Router) {
-	// GET
-	r.HandleFunc("", handlers.Index).Methods("GET")
-	r.HandleFunc("/", handlers.Index).Methods("GET")
-}
-
 // Current routes
 func (s Server) RouteCurrent(r *mux.Router) {
 	// GET
@@ -95,13 +88,12 @@ func (s Server) Run() error {
 	s.Router = mux.NewRouter()
 
 	// Start routing
-	s.RouteIndex(s.Router.PathPrefix("").Subrouter())
+	s.Router.PathPrefix("").Handler(httpSwagger.WrapHandler) // Docs
 	s.RouteCurrent(s.Router.PathPrefix("/current").Subrouter())
 	s.RouteCached(s.Router.PathPrefix("/cached").Subrouter())
 	s.RouteEvent(s.Router.PathPrefix("/event").Subrouter())
 	s.RouteConcorde(s.Router.PathPrefix("/concorde").Subrouter())
 	s.RouteFixes(s.Router.PathPrefix("/fixes").Subrouter())
-	s.Router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
 
 	// Every 10 minutes compare the message with what we have in memory
 	go func() {
@@ -116,7 +108,7 @@ func (s Server) Run() error {
 	}()
 
 	// Now serve
-	err := http.ListenAndServe(":5000", s.Router)
+	err := http.ListenAndServe(":80", s.Router)
 
 	// Error
 	return err
