@@ -11,35 +11,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// GetAllCachedTracks godoc
-// @Summary Get all cached tracks
-// @Description JSON output of all tracks cached in the API database (except Concorde and event)
-// @Tags cached
-// @Produce json
-// @Success 200 {array} models.Track
-// @Failure 404 {object} NotFound
-// @Failure 500 {object} InternalServerError
-// @Router /cached [get]
-func GetAllCachedTracks(w http.ResponseWriter, r *http.Request) {
-	// Set json header
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	// Fetch fixes and check error
-	tracks, err := db.SelectCachedTracks(models.UNKNOWN)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			json.NewEncoder(w).Encode(Error404(&w, "No tracks were found in the cache"))
-		} else {
-			json.NewEncoder(w).Encode(Error500(&w, err.Error()))
-		}
-		return
-	}
-
-	// Encode
-	json.NewEncoder(w).Encode(tracks)
-}
-
 // GetCachedTrack godoc
 // @Summary Get one cached track by ID and TMI
 // @Description JSON output of a specific track cached in the API database
@@ -72,15 +43,60 @@ func GetCachedTrack(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(track)
 }
 
-// GetCachedEastboundTracks godoc
-// @Summary Get all cached eastbound tracks
-// @Description JSON output of all eastbound tracks cached in the API database
+// GetCachedTracks godoc
+// @Summary Get all cached tracks with a given TMI
+// @Description JSON output of all cached tracks with the requested TMI
 // @Tags cached
 // @Produce json
+// @Param tmi path string true "Track Message Identifier (Julian calendar day numbered 1 to 365, incl. any amendment characters)"
 // @Success 200 {array} models.Track
 // @Failure 404 {object} NotFound
 // @Failure 500 {object} InternalServerError
-// @Router /cached/eastbound [get]
+// @Router /cached/{tmi} [get]
+func GetCachedTracks(w http.ResponseWriter, r *http.Request) {
+	// SI units?
+	/*isMetres := true // Default
+	si, err := strconv.ParseBool(r.URL.Query().Get("si"))
+	if err != nil || !si { // If not
+		isMetres = false
+	}*/
+
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Fetch fixes and check error
+	params := mux.Vars(r)
+	tracks, err := db.SelectCachedTracksByTMI(params["tmi"], models.UNKNOWN)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			json.NewEncoder(w).Encode(Error404(&w, "No tracks matching the query criteria were found."))
+		} else {
+			json.NewEncoder(w).Encode(Error500(&w, err.Error()))
+		}
+		return
+	}
+
+	// No error but check not empty
+	if len(tracks) == 0 {
+		json.NewEncoder(w).Encode(Error404(&w, "No tracks matching the query criteria were found."))
+		return
+	}
+
+	// Encode
+	json.NewEncoder(w).Encode(tracks)
+}
+
+// GetCachedEastboundTracks godoc
+// @Summary Get all cached eastbound tracks with a given TMI
+// @Description JSON output of all cached eastbound tracks with the requested TMI
+// @Tags cached
+// @Produce json
+// @Param tmi path string true "Track Message Identifier (Julian calendar day numbered 1 to 365, incl. any amendment characters)"
+// @Success 200 {array} models.Track
+// @Failure 404 {object} NotFound
+// @Failure 500 {object} InternalServerError
+// @Router /cached/eastbound/{tmi} [get]
 func GetCachedEastboundTracks(w http.ResponseWriter, r *http.Request) {
 	// SI units?
 	/*isMetres := true // Default
@@ -94,7 +110,8 @@ func GetCachedEastboundTracks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// Fetch fixes and check error
-	tracks, err := db.SelectCachedTracks(models.EAST)
+	params := mux.Vars(r)
+	tracks, err := db.SelectCachedTracksByTMI(params["tmi"], models.EAST)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			json.NewEncoder(w).Encode(Error404(&w, "No tracks matching the query criteria were found."))
@@ -104,32 +121,53 @@ func GetCachedEastboundTracks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// No error but check not empty
+	if len(tracks) == 0 {
+		json.NewEncoder(w).Encode(Error404(&w, "No tracks matching the query criteria were found."))
+		return
+	}
+
 	// Encode
 	json.NewEncoder(w).Encode(tracks)
 }
 
 // GetCachedWestboundTracks godoc
-// @Summary Get all cached westbound tracks
-// @Description JSON output of all westbound tracks cached in the API database
+// @Summary Get all cached westbound tracks with a given TMI
+// @Description JSON output of all cached westbound tracks with the requested TMI
 // @Tags cached
 // @Produce json
+// @Param tmi path string true "Track Message Identifier (Julian calendar day numbered 1 to 365, incl. any amendment characters)"
 // @Success 200 {array} models.Track
 // @Failure 404 {object} NotFound
 // @Failure 500 {object} InternalServerError
-// @Router /cached/westbound [get]
+// @Router /cached/westbound/{tmi} [get]
 func GetCachedWestboundTracks(w http.ResponseWriter, r *http.Request) {
+	// SI units?
+	/*isMetres := true // Default
+	si, err := strconv.ParseBool(r.URL.Query().Get("si"))
+	if err != nil || !si { // If not
+		isMetres = false
+	}*/
+
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// Fetch fixes and check error
-	tracks, err := db.SelectCachedTracks(models.WEST)
+	params := mux.Vars(r)
+	tracks, err := db.SelectCachedTracksByTMI(params["tmi"], models.WEST)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			json.NewEncoder(w).Encode(Error404(&w, "No tracks matching the query criteria were found."))
 		} else {
 			json.NewEncoder(w).Encode(Error500(&w, err.Error()))
 		}
+		return
+	}
+
+	// No error but check not empty
+	if len(tracks) == 0 {
+		json.NewEncoder(w).Encode(Error404(&w, "No tracks matching the query criteria were found."))
 		return
 	}
 

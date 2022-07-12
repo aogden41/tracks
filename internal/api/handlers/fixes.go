@@ -36,8 +36,8 @@ func GetAllFixes(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetFix godoc
-// @Summary Get one stored fixe
-// @Description JSON output of one specific fixe stored in the API database
+// @Summary Get one stored fix
+// @Description JSON output of one specific fix stored in the API database
 // @Tags fixes
 // @Produce json
 // @Param fix_name path string true "The name of the fix"

@@ -33,11 +33,10 @@ func (s Server) RouteCurrent(r *mux.Router) {
 // Cached routes
 func (s Server) RouteCached(r *mux.Router) {
 	// GET
-	r.HandleFunc("", handlers.GetAllCachedTracks).Methods("GET")
-	r.HandleFunc("/", handlers.GetAllCachedTracks).Methods("GET")
-	r.HandleFunc("/eastbound", handlers.GetCachedEastboundTracks).Methods("GET")
-	r.HandleFunc("/westbound", handlers.GetCachedWestboundTracks).Methods("GET")
+	r.HandleFunc("/eastbound/{tmi}", handlers.GetCachedEastboundTracks).Methods("GET")
+	r.HandleFunc("/westbound/{tmi}", handlers.GetCachedWestboundTracks).Methods("GET")
 	r.HandleFunc("/check/{track_id}", handlers.CheckIsTrackCached).Methods("GET")
+	r.HandleFunc("/{tmi}", handlers.GetCachedTracks).Methods("GET")
 	r.HandleFunc("/{tmi}/{track_id}", handlers.GetCachedTrack).Methods("GET")
 }
 
@@ -88,12 +87,12 @@ func (s Server) Run() error {
 	s.Router = mux.NewRouter()
 
 	// Start routing
-	s.Router.PathPrefix("").Handler(httpSwagger.WrapHandler) // Docs
 	s.RouteCurrent(s.Router.PathPrefix("/current").Subrouter())
 	s.RouteCached(s.Router.PathPrefix("/cached").Subrouter())
 	s.RouteEvent(s.Router.PathPrefix("/event").Subrouter())
 	s.RouteConcorde(s.Router.PathPrefix("/concorde").Subrouter())
 	s.RouteFixes(s.Router.PathPrefix("/fixes").Subrouter())
+	s.Router.PathPrefix("").Handler(httpSwagger.WrapHandler) // Docs
 
 	// Every 10 minutes compare the message with what we have in memory
 	go func() {

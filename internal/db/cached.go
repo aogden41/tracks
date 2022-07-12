@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func SelectCachedTracks(dir models.Direction) (map[string]models.Track, error) {
+func SelectCachedTracksByTMI(tmi string, dir models.Direction) (map[string]models.Track, error) {
 	// Connect and defer
 	db := Connect()
 	defer db.Close()
@@ -18,10 +18,10 @@ func SelectCachedTracks(dir models.Direction) (map[string]models.Track, error) {
 	// Statement
 	query := `SELECT track_id, tmi, route, flight_levels, direction, valid_from, valid_to 
 				FROM tracks.cache 
-				WHERE type <> 1 AND type <> 2;`
+				WHERE type <> 1 AND type <> 2 AND tmi LIKE $1;`
 
 	// Perform query
-	rows, err := db.Query(query)
+	rows, err := db.Query(query, tmi)
 	if err != nil {
 		panic(err)
 	}

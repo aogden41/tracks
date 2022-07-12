@@ -1,11 +1,13 @@
 package api
 
 import (
+	"database/sql"
+	"strconv"
+	"unicode"
+
 	"github.com/aogden41/tracks/internal/db"
 	"github.com/aogden41/tracks/internal/db/models"
 	"github.com/aogden41/tracks/internal/tracks"
-	"strconv"
-	"unicode"
 )
 
 func CompareMessage(server *Server) {
@@ -60,25 +62,15 @@ func CacheJob() error {
 	}
 
 	// Check now for tracks in the cache out of date by more than 7 days
-	tracks, err = db.SelectCachedTracks(models.UNKNOWN)
-	if err != nil {
+	tracks, err = db.SelectCachedTracksByTMI(strconv.Itoa(currentTMINumeric-8), models.UNKNOWN)
+	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
-	for _, track := range tracks {
-		// Strip any alpha runes off the end in case of amendments
-		trackTMI := track.TMI
-		if !unicode.IsDigit(rune(trackTMI[len(trackTMI)-1])) {
-			trackTMI = trackTMI[:len(trackTMI)-1]
-		}
-
-		// Convert TMI to integer
-		tmiInt, _ := strconv.Atoi(trackTMI)
-
-		// Finally compare them
-		if (currentTMINumeric - tmiInt) > 7 {
+	// If there were tracks that returned then delete them
+	if len(tracks) > 0 || err == sql.ErrNoRows {
+		for _, track := range tracks {
 			db.DeleteCachedTrack(track.ID)
 		}
 	}
-
 	return nil
 }
