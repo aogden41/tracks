@@ -11,6 +11,30 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ListCachedTMIs godoc
+// @Summary List the TMIs cached in the database
+// @Description JSON array of all TMIs cached in the database
+// @Tags cached
+// @Produce json
+// @Success 200 {array} string
+// @Failure 500 {object} InternalServerError
+// @Router /cached/tmis [get]
+func ListCachedTMIs(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Get parameters, request data and encode
+	tmis, err := db.SelectCachedTMIs()
+	if err != nil {
+		json.NewEncoder(w).Encode(Error500(&w, err.Error()))
+		return
+	}
+
+	// Encode
+	json.NewEncoder(w).Encode(tmis)
+}
+
 // GetCachedTrack godoc
 // @Summary Get one cached track by ID and TMI
 // @Description JSON output of a specific track cached in the API database

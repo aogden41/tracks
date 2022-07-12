@@ -10,6 +10,49 @@ import (
 	_ "github.com/lib/pq"
 )
 
+func SelectCachedTMIs() ([]string, error) {
+	// Connect and defer
+	db := Connect()
+	defer db.Close()
+
+	// Statement
+	query := `SELECT tmi
+				FROM tracks.cache 
+				WHERE type <> 1 AND type <> 2;`
+
+	// Perform query
+	rows, err := db.Query(query)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	// Array of return values
+	tmis := []string{}
+
+	// Iterate and assign
+	lastTMI := ""
+	for rows.Next() {
+		rowTMI := ""
+		if err := rows.Scan(&rowTMI); err != nil {
+			return nil, err
+		}
+		// Compare row TMI to the last tmi
+		if rowTMI != lastTMI {
+			lastTMI = rowTMI
+			tmis = append(tmis, lastTMI)
+		}
+	}
+
+	// Catch any other error
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Success, return everything
+	return tmis, nil
+}
+
 func SelectCachedTracksByTMI(tmi string, dir models.Direction) (map[string]models.Track, error) {
 	// Connect and defer
 	db := Connect()

@@ -33,6 +33,7 @@ func (s Server) RouteCurrent(r *mux.Router) {
 // Cached routes
 func (s Server) RouteCached(r *mux.Router) {
 	// GET
+	r.HandleFunc("/tmis", handlers.ListCachedTMIs).Methods("GET")
 	r.HandleFunc("/eastbound/{tmi}", handlers.GetCachedEastboundTracks).Methods("GET")
 	r.HandleFunc("/westbound/{tmi}", handlers.GetCachedWestboundTracks).Methods("GET")
 	r.HandleFunc("/check/{track_id}", handlers.CheckIsTrackCached).Methods("GET")
