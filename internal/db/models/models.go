@@ -32,10 +32,10 @@ const (
 
 // Fix model
 type Fix struct {
-	Name      string
-	Latitude  float64
-	Longitude float64
-	IsValid   bool
+	Name      string  `json:"Name"`
+	Latitude  float64 `json:"Latitude"`
+	Longitude float64 `json:"Longitude"`
+	IsValid   bool    `json:"IsValid"`
 }
 
 func CreateValidFix(name string, lat float64, lon float64) Fix {
@@ -48,12 +48,12 @@ func CreateInvalidFix() Fix {
 
 // Track model
 type Track struct {
-	ID           string
-	TMI          string
-	Route        []Fix
-	FlightLevels []int
-	Direction    Direction
-	ValidFrom    int64
-	ValidTo      int64
-	Type         TrackType
+	ID           string    `json:"ID"`
+	TMI          string    `json:"TMI"`
+	Route        []Fix     `json:"Route"`
+	FlightLevels []int     `json:"FlightLevels"`
+	Direction    Direction `json:"Direction"`
+	ValidFrom    int64     `json:"ValidFrom"`
+	ValidTo      int64     `json:"ValidTo"`
+	Type         TrackType `json:"Type"`
 }

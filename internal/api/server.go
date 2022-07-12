@@ -6,6 +6,10 @@ import (
 	"github.com/aogden41/tracks/internal/api/handlers"
 	"github.com/gorilla/mux"
 	"github.com/robfig/cron/v3"
+
+	_ "github.com/aogden41/tracks/docs"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {
@@ -13,7 +17,7 @@ type Server struct {
 	CurrentTMI string
 }
 
-// Index routes
+// Index/docs routes
 func (s Server) RouteIndex(r *mux.Router) {
 	// GET
 	r.HandleFunc("", handlers.Index).Methods("GET")
@@ -40,9 +44,8 @@ func (s Server) RouteCached(r *mux.Router) {
 	r.HandleFunc("/", handlers.GetAllCachedTracks).Methods("GET")
 	r.HandleFunc("/eastbound", handlers.GetCachedEastboundTracks).Methods("GET")
 	r.HandleFunc("/westbound", handlers.GetCachedWestboundTracks).Methods("GET")
-	r.HandleFunc("/{track_id}", handlers.GetCachedTrack).Methods("GET")
-	r.HandleFunc("/days/{days_old}", handlers.GetCachedTracksByDaysOld).Methods("GET")
 	r.HandleFunc("/check/{track_id}", handlers.CheckIsTrackCached).Methods("GET")
+	r.HandleFunc("/{tmi}/{track_id}", handlers.GetCachedTrack).Methods("GET")
 }
 
 // Event routes
@@ -52,13 +55,13 @@ func (s Server) RouteEvent(r *mux.Router) {
 	r.HandleFunc("/", handlers.GetAllEventTracks).Methods("GET")
 	r.HandleFunc("/{track_id}", handlers.GetEventTrack).Methods("GET")
 	// POST
-	r.HandleFunc("", handlers.PostEventTrack).Methods("POST")
-	r.HandleFunc("/", handlers.PostEventTrack).Methods("POST")
+	//r.HandleFunc("", handlers.PostEventTrack).Methods("POST")
+	//r.HandleFunc("/", handlers.PostEventTrack).Methods("POST")
 	// PUT
-	r.HandleFunc("", handlers.PutEventTrack).Methods("PUT")
-	r.HandleFunc("/", handlers.PutEventTrack).Methods("PUT")
+	//r.HandleFunc("", handlers.PutEventTrack).Methods("PUT")
+	//r.HandleFunc("/", handlers.PutEventTrack).Methods("PUT")
 	// DELETE
-	r.HandleFunc("/{track_id}", handlers.DeleteEventTrack).Methods("DELETE")
+	//r.HandleFunc("/{track_id}", handlers.DeleteEventTrack).Methods("DELETE")
 }
 
 // Concorde routes
@@ -77,23 +80,19 @@ func (s Server) RouteFixes(r *mux.Router) {
 	r.HandleFunc("/concorde", handlers.GetConcordeFixes).Methods("GET")
 	r.HandleFunc("/{fix_name}", handlers.GetFix).Methods("GET")
 	// POST
-	r.HandleFunc("", handlers.PostFix).Methods("POST")
-	r.HandleFunc("/", handlers.PostFix).Methods("POST")
+	//r.HandleFunc("", handlers.PostFix).Methods("POST")
+	//r.HandleFunc("/", handlers.PostFix).Methods("POST")
 	// PUT
-	r.HandleFunc("", handlers.PutFix).Methods("PUT")
-	r.HandleFunc("/", handlers.PutFix).Methods("PUT")
+	//r.HandleFunc("", handlers.PutFix).Methods("PUT")
+	//r.HandleFunc("/", handlers.PutFix).Methods("PUT")
 	// DELETE
-	r.HandleFunc("/{fix_name}", handlers.DeleteFix).Methods("DELETE")
+	//r.HandleFunc("/{fix_name}", handlers.DeleteFix).Methods("DELETE")
 }
 
 // Run the server
 func (s Server) Run() error {
 	// Initialise router
 	s.Router = mux.NewRouter()
-
-	// First TMI
-	s.CurrentTMI = ""
-	CompareMessage(&s)
 
 	// Start routing
 	s.RouteIndex(s.Router.PathPrefix("").Subrouter())
@@ -102,11 +101,19 @@ func (s Server) Run() error {
 	s.RouteEvent(s.Router.PathPrefix("/event").Subrouter())
 	s.RouteConcorde(s.Router.PathPrefix("/concorde").Subrouter())
 	s.RouteFixes(s.Router.PathPrefix("/fixes").Subrouter())
+	s.Router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
 
 	// Every 10 minutes compare the message with what we have in memory
-	cron := cron.New()
-	cron.AddFunc("@every 10s", func() { CompareMessage(&s) })
-	cron.Start()
+	go func() {
+		// First TMI
+		s.CurrentTMI = ""
+		CompareMessage(&s)
+
+		// Every check thereafter
+		cron := cron.New()
+		cron.AddFunc("@every 10m", func() { CompareMessage(&s) })
+		cron.Start()
+	}()
 
 	// Now serve
 	err := http.ListenAndServe(":5000", s.Router)

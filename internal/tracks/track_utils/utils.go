@@ -72,5 +72,5 @@ func ParseSlashedCoordinate(point string) ([2]float64, error) {
 	}
 
 	// Return lat/lon pair
-	return [2]float64{latitude, longitude}, nil
+	return [2]float64{latitude, -longitude}, nil
 }

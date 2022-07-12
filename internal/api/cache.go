@@ -60,7 +60,7 @@ func CacheJob() error {
 	}
 
 	// Check now for tracks in the cache out of date by more than 7 days
-	tracks, err = db.SelectCachedTracks()
+	tracks, err = db.SelectCachedTracks(models.UNKNOWN)
 	if err != nil {
 		return err
 	}

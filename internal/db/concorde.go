@@ -86,7 +86,7 @@ func SelectConcordeTrack(tk string) (models.Track, error) {
 	}
 
 	// Statement
-	query := `SELECT track_id, tmi, flight_levels, direction, valid_from, valid_to FROM tracks.cache WHERE track_id LIKE $1;`
+	query := `SELECT track_id, tmi, flight_levels, direction, valid_from, valid_to FROM tracks.cache WHERE track_id LIKE $1 AND type LIKE 1;`
 
 	// Get the row and error check
 	row := db.QueryRow(query, strings.ToUpper(tk))

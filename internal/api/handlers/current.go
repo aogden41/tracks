@@ -12,7 +12,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// GET /current
+// GetAllCurrentTracks godoc
+// @Summary Get all current tracks
+// @Description JSON output of all tracks published in the current NAT message
+// @Tags current
+// @Produce json
+// @Param si query boolean false "Parse altitudes in metres"
+// @Success 200 {array} models.Track
+// @Failure 500 {object} InternalServerError
+// @Router /current [get]
 func GetAllCurrentTracks(w http.ResponseWriter, r *http.Request) {
 	// SI units?
 	isMetres := true // Default
@@ -23,17 +31,30 @@ func GetAllCurrentTracks(w http.ResponseWriter, r *http.Request) {
 
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// Parse tracks and return
 	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.NA)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(Error500(&w, err.Error()))
+		return
 	}
+
 	// Encode and return
 	json.NewEncoder(w).Encode(tracks)
 }
 
-// GET /current/{track_id}
+// GetCurrentTrack godoc
+// @Summary Get one current track by ID
+// @Description JSON output of a specific track published in the current NAT message
+// @Tags current
+// @Produce json
+// @Param track_id path string true "Track ID (letter from A-Z)"
+// @Param si query boolean false "Parse altitudes in metres"
+// @Success 200 {object} models.Track
+// @Failure 404 {object} NotFound
+// @Failure 500 {object} InternalServerError
+// @Router /current/{track_id} [get]
 func GetCurrentTrack(w http.ResponseWriter, r *http.Request) {
 	// SI units?
 	isMetres := true
@@ -45,6 +66,7 @@ func GetCurrentTrack(w http.ResponseWriter, r *http.Request) {
 
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// Get the track ID parameter and isolate the fix we need
 	params := mux.Vars(r)
@@ -53,13 +75,30 @@ func GetCurrentTrack(w http.ResponseWriter, r *http.Request) {
 	// Deserialise and display
 	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.NA)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(Error500(&w, err.Error()))
+		return
 	}
-	// Encode and return
-	json.NewEncoder(w).Encode(tracks[tid])
+
+	// Check if the track is actually in the map
+	if tk, ok := tracks[tid]; ok {
+		// Encode and return
+		json.NewEncoder(w).Encode(tk)
+	} else {
+		// Not found
+		json.NewEncoder(w).Encode(Error404(&w, "The requested track does not exist."))
+	}
 }
 
-// GET /current/eastbound
+// GetCurrentEastboundTracks godoc
+// @Summary Get all currently published eastbound tracks
+// @Description JSON output of all eastbound tracks currently listed in the NAT message
+// @Tags current
+// @Produce json
+// @Param si query boolean false "Parse altitudes in metres"
+// @Success 200 {array} models.Track
+// @Failure 404 {object} NotFound
+// @Failure 500 {object} InternalServerError
+// @Router /current/eastbound [get]
 func GetCurrentEastboundTracks(w http.ResponseWriter, r *http.Request) {
 	// SI units?
 	isMetres := true // Default
@@ -70,17 +109,35 @@ func GetCurrentEastboundTracks(w http.ResponseWriter, r *http.Request) {
 
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// Parse tracks and return
 	tracks, err := tracks.ParseTracks(isMetres, models.EAST, models.NA)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(Error500(&w, err.Error()))
+		return
 	}
-	// Encode and return
-	json.NewEncoder(w).Encode(tracks)
+
+	// Check if empty
+	if len(tracks) != 0 {
+		// Encode and return
+		json.NewEncoder(w).Encode(tracks)
+	} else {
+		// Not found
+		json.NewEncoder(w).Encode(Error404(&w, "The requested tracks do not exist."))
+	}
 }
 
-// GET /current/westbound
+// GetCurrentWestboundTracks godoc
+// @Summary Get all currently published westbound tracks
+// @Description JSON output of all westbound tracks currently listed in the NAT message
+// @Tags current
+// @Produce json
+// @Param si query boolean false "Parse altitudes in metres"
+// @Success 200 {array} models.Track
+// @Failure 404 {object} NotFound
+// @Failure 500 {object} InternalServerError
+// @Router /current/westbound [get]
 func GetCurrentWestboundTracks(w http.ResponseWriter, r *http.Request) {
 	// SI units?
 	isMetres := true // Default
@@ -91,17 +148,34 @@ func GetCurrentWestboundTracks(w http.ResponseWriter, r *http.Request) {
 
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// Parse tracks and return
 	tracks, err := tracks.ParseTracks(isMetres, models.WEST, models.NA)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	// Encode and return
-	json.NewEncoder(w).Encode(tracks)
+
+	// Check if empty
+	if len(tracks) != 0 {
+		// Encode and return
+		json.NewEncoder(w).Encode(tracks)
+	} else {
+		// Not found
+		json.NewEncoder(w).Encode(Error404(&w, "The requested tracks do not exist."))
+	}
 }
 
-// GET /current/now
+// GetCurrentTracksValidNow godoc
+// @Summary Get all currently published tracks valid now
+// @Description JSON output of all tracks currently listed in the NAT message which are valid now
+// @Tags current
+// @Produce json
+// @Param si query boolean false "Parse altitudes in metres"
+// @Success 200 {array} models.Track
+// @Failure 404 {object} NotFound
+// @Failure 500 {object} InternalServerError
+// @Router /current/now [get]
 func GetCurrentTracksValidNow(w http.ResponseWriter, r *http.Request) {
 	// SI units?
 	isMetres := true // Default
@@ -112,6 +186,7 @@ func GetCurrentTracksValidNow(w http.ResponseWriter, r *http.Request) {
 
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// Parse tracks and return
 	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.NOW)
@@ -119,11 +194,26 @@ func GetCurrentTracksValidNow(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	// Encode and return
-	json.NewEncoder(w).Encode(tracks)
+	// Check if empty
+	if len(tracks) != 0 {
+		// Encode and return
+		json.NewEncoder(w).Encode(tracks)
+	} else {
+		// Not found
+		json.NewEncoder(w).Encode(Error404(&w, "The requested tracks do not exist."))
+	}
 }
 
-// GET /current/later
+// GetCurrentTracksValidLater godoc
+// @Summary Get all currently published tracks valid later
+// @Description JSON output of all tracks currently listed in the NAT message which are valid later
+// @Tags current
+// @Produce json
+// @Param si query boolean false "Parse altitudes in metres"
+// @Success 200 {array} models.Track
+// @Failure 404 {object} NotFound
+// @Failure 500 {object} InternalServerError
+// @Router /current/later [get]
 func GetCurrentTracksValidLater(w http.ResponseWriter, r *http.Request) {
 	// SI units?
 	isMetres := true // Default
@@ -134,6 +224,7 @@ func GetCurrentTracksValidLater(w http.ResponseWriter, r *http.Request) {
 
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// Parse tracks and return
 	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.LATER)
@@ -141,11 +232,26 @@ func GetCurrentTracksValidLater(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	// Encode and return
-	json.NewEncoder(w).Encode(tracks)
+	// Check if empty
+	if len(tracks) != 0 {
+		// Encode and return
+		json.NewEncoder(w).Encode(tracks)
+	} else {
+		// Not found
+		json.NewEncoder(w).Encode(Error404(&w, "The requested tracks do not exist."))
+	}
 }
 
-// GET /current/earlier
+// GetCurrentTracksValidEarlier godoc
+// @Summary Get all currently published tracks valid earlier
+// @Description JSON output of all tracks currently listed in the NAT message which are valid earlier
+// @Tags current
+// @Produce json
+// @Param si query boolean false "Parse altitudes in metres"
+// @Success 200 {array} models.Track
+// @Failure 404 {object} NotFound
+// @Failure 500 {object} InternalServerError
+// @Router /current/earlier [get]
 func GetCurrentTracksValidEarlier(w http.ResponseWriter, r *http.Request) {
 	// SI units?
 	isMetres := true // Default
@@ -156,6 +262,7 @@ func GetCurrentTracksValidEarlier(w http.ResponseWriter, r *http.Request) {
 
 	// Set json header
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// Parse tracks and return
 	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.EARLIER)
@@ -163,6 +270,12 @@ func GetCurrentTracksValidEarlier(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	// Encode and return
-	json.NewEncoder(w).Encode(tracks)
+	// Check if empty
+	if len(tracks) != 0 {
+		// Encode and return
+		json.NewEncoder(w).Encode(tracks)
+	} else {
+		// Not found
+		json.NewEncoder(w).Encode(Error404(&w, "The requested tracks do not exist."))
+	}
 }

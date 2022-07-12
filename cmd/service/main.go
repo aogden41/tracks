@@ -13,6 +13,19 @@ func init() {
 	}
 }
 
+// @title NAT Tracks API
+// @version 2.0
+// @description Parses the track message at https://www.notams.faa.gov/common/nat.html and stores a rolling 30-day track cache. Also handles events and concorde tracks.
+
+// @contact.name Andrew Ogden
+// @contact.url https://ganderoceanic.ca
+// @contact.email a.ogden@vatcan.ca
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host tracks.ganderoceanic.ca
+// @BasePath /docs
 func main() {
 	go func() {
 		// Run the server
