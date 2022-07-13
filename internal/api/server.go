@@ -22,6 +22,7 @@ func (s Server) RouteCurrent(r *mux.Router) {
 	// GET
 	r.HandleFunc("", handlers.GetAllCurrentTracks).Methods("GET")
 	r.HandleFunc("/", handlers.GetAllCurrentTracks).Methods("GET")
+	r.HandleFunc("/tmi", handlers.GetCurrentTMI).Methods("GET")
 	r.HandleFunc("/eastbound", handlers.GetCurrentEastboundTracks).Methods("GET")
 	r.HandleFunc("/westbound", handlers.GetCurrentWestboundTracks).Methods("GET")
 	r.HandleFunc("/now", handlers.GetCurrentTracksValidNow).Methods("GET")

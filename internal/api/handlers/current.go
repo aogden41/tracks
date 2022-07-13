@@ -153,7 +153,7 @@ func GetCurrentWestboundTracks(w http.ResponseWriter, r *http.Request) {
 	// Parse tracks and return
 	tracks, err := tracks.ParseTracks(isMetres, models.WEST, models.NA)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(Error500(&w, err.Error()))
 	}
 
 	// Check if empty
@@ -191,7 +191,7 @@ func GetCurrentTracksValidNow(w http.ResponseWriter, r *http.Request) {
 	// Parse tracks and return
 	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.NOW)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(Error500(&w, err.Error()))
 	}
 
 	// Check if empty
@@ -229,7 +229,7 @@ func GetCurrentTracksValidLater(w http.ResponseWriter, r *http.Request) {
 	// Parse tracks and return
 	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.LATER)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(Error500(&w, err.Error()))
 	}
 
 	// Check if empty
@@ -267,7 +267,7 @@ func GetCurrentTracksValidEarlier(w http.ResponseWriter, r *http.Request) {
 	// Parse tracks and return
 	tracks, err := tracks.ParseTracks(isMetres, models.UNKNOWN, models.EARLIER)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(Error500(&w, err.Error()))
 	}
 
 	// Check if empty
@@ -277,5 +277,40 @@ func GetCurrentTracksValidEarlier(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Not found
 		json.NewEncoder(w).Encode(Error404(&w, "The requested tracks do not exist."))
+	}
+}
+
+// GetCurrentTMI godoc
+// @Summary Get the current TMI
+// @Description String output of the current TMI
+// @Tags current
+// @Produce json
+// @Success 200 {object} string
+// @Failure 500 {object} InternalServerError
+// @Router /current/tmi [get]
+func GetCurrentTMI(w http.ResponseWriter, r *http.Request) {
+	// Set json header
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Parse the tracks for the TMI
+	tracks, _ := tracks.ParseTracks(false, models.UNKNOWN, models.NA)
+	var tmi string
+
+	// Dodgy but works
+	for _, track := range tracks {
+		// Set TMI
+		tmi = track.TMI
+
+		// Break after first iteration, we have what we need
+		break
+	}
+
+	if len(tmi) != 0 {
+		// Encode and return
+		json.NewEncoder(w).Encode(tmi)
+	} else {
+		// Not found
+		json.NewEncoder(w).Encode(Error500(&w, "Could not fetch TMI."))
 	}
 }
