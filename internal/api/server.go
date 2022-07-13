@@ -108,7 +108,7 @@ func (s Server) Run() error {
 	}()
 
 	// Now serve
-	err := http.ListenAndServe(":80", s.Router)
+	err := http.ListenAndServe(":5000", s.Router)
 
 	// Error
 	return err

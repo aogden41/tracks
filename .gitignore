@@ -19,6 +19,6 @@ vendor/
 .VSCodeCounter/
 
 docs/
-Dockerfile
 go-app-compose.yaml
 nginx-proxy-compose.yaml
+docker-compose.yaml
